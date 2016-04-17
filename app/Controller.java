@@ -10,5 +10,5 @@ public abstract class Controller implements Observer
 	//which means that it gets notified. When Controller gets
 	//notified, the notifier will call update( ) with a message 
 	//declaring the type of notification, and a list of parameters
-	public void update(String message, List<Object> objects) { }
+	synchronized public void update(String message, Object object) { }
 }

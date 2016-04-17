@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /* 
 network controller will manage
 the input and output events for the 
@@ -12,6 +15,7 @@ public class NetworkController extends Controller
 	private static boolean _hosting;
 	//singleton instance
 	private static NetworkController _instance = null;
+	private static Observer _gameController;
 
 	//private constructor to maintain
 	//singleton pattern
@@ -26,11 +30,13 @@ public class NetworkController extends Controller
 		{
 			_hosting = false; 
 			_client = Client.getInstance();
+			_client.setNetworkController(this);
 		}
 		else
 		{
 			_hosting = true; 
 			_server = Server.getInstance();
+			_server.setNetworkController(this);
 		}
 	} 
 
@@ -56,6 +62,8 @@ public class NetworkController extends Controller
 	}	
 	*/
 
+	public void setGameController(Observer gameController) { _gameController = gameController; }
+
 	//this will start the client 
 	// or server threads
 	public static void run()
@@ -67,6 +75,36 @@ public class NetworkController extends Controller
 		else
 		{
 			_client.start();
+		}
+	}
+
+	synchronized public void update(String message, Object object) 
+	{ 
+
+		//System.out.println("Log: " + message);
+		if (_hosting)
+		{
+			switch(message)
+			{
+				case "friend object":
+					_server.update(message, object);
+					break;
+				case "recieved":
+					_gameController.update(((Packet)object).getMessage(), ((Packet)object).getObject());
+					break;
+			}
+		}
+		else
+		{
+			switch(message)
+			{
+				case "friend object":
+					_client.update(message, object);
+					break;
+				case "recieved":
+					_gameController.update(((Packet)object).getMessage(), ((Packet)object).getObject());
+					break;
+			}
 		}
 	}
 }

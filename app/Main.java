@@ -26,11 +26,18 @@ class Main
 	public static void init()
 	{
 		gameView = GameView.getInstance();
+
+
 		gameModel = GameModel.getInstance();
 		gameController = GameController.getInstance();
 
 		networkController = networkController.getInstance(option);
 
+
+
+		((GameView)gameView).setController(gameController);
+		((NetworkController)networkController).setGameController(gameController);
+		
 		((GameController)gameController).setView(gameView);
 		((GameController)gameController).setModel(gameModel);
 		((GameController)gameController).setNetworkController(networkController);

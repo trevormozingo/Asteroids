@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.net.*;
 import java.io.*;
 import java.util.Scanner;
@@ -13,6 +15,7 @@ public class Client extends Thread
 	private static Socket _socket; 				//client socket for i/o communications
 	private static int _port;					//server port
 	private static String _hostname;			//server hostname
+	private static Observer _networkController;
 
 	//constructor to setup the client
 	private Client() 
@@ -46,6 +49,8 @@ public class Client extends Thread
 		return _instance;
 	}
 
+	public void setNetworkController(Observer networkController) { _networkController = networkController; }
+
 	//this will start the client side
 	//the client will then continue to poll for 
 	//server side updates
@@ -56,7 +61,6 @@ public class Client extends Thread
 			 System.out.println("Log: Connecting to " + _hostname + " on port " + _port);
 			_socket = new Socket(_hostname, _port); 
 			System.out.println("Log: Just connected to " + _socket.getRemoteSocketAddress());
-
 		}
 		catch(Exception e) 
 		{ 
@@ -67,17 +71,9 @@ public class Client extends Thread
 		{
 			try
 			{
-				//DataInputStream in = new DataInputStream(_socket.getInputStream());
-				
-				/*
-				Scanner scanner = new Scanner(System.in);
-				System.out.println(">>> ");
-				String output = scanner.nextLine();
-
-				OutputStream outToServer = _socket.getOutputStream();
-         		DataOutputStream out = new DataOutputStream(outToServer);
-         		out.writeUTF(output);
-         		*/
+				ObjectInputStream in = new ObjectInputStream(_socket.getInputStream());
+				Packet packet = (Packet)in.readObject();
+				_networkController.update("recieved", packet);
          	}
          	catch(Exception e) 
 			{ 
@@ -85,6 +81,25 @@ public class Client extends Thread
 			}
 		}
 	}
+
+	synchronized public void update(String message, Object object) 
+	{ 
+		try
+		{
+			Packet packet = new Packet(message, object);
+			ObjectOutputStream out = new ObjectOutputStream(_socket.getOutputStream());
+			out.writeObject(packet);
+			out.flush();
+			//DataOutputStream out = new DataOutputStream(_socket.getOutputStream());
+			//out.writeUTF(message);
+
+		}
+		catch(Exception e) 
+		{ 
+			System.out.println("Log: " + e.toString());
+		}
+	}
+
 }
 
 

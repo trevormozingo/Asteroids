@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 /* 
 The game controller will be the main center for
@@ -13,9 +14,9 @@ public class GameController extends Controller
 	//to the view, the model, and the network controller.
 	//by using the observer design pattern, controller
 	//will be able to update each of these. 
-	private Observer _view;
-	private Observer _model;
-	private Observer _networkController;
+	private static Observer _view;
+	private static Observer _model;
+	private static Observer _networkController;
 
 	//singleton design pattern for the  GameController
 	//needs an instance
@@ -39,28 +40,56 @@ public class GameController extends Controller
 
 	//public Observer getView() { return _view; }
 	//set the view
-	public void setView(Observer view) { _view = view; }
+	public static void setView(Observer view) { _view = view; }
 
 	//public Observer getModel() { return _model; }
 	//set the model
-	public void setModel(Observer model) { _model = model; }
+	public static void setModel(Observer model) { _model = model; }
 
 	//public Observer getNetworkController() { return _networkController; }
 	//set the network controller
-	public void setNetworkController(Observer networkController) { _networkController = networkController; }
+	public static void setNetworkController(Observer networkController) { _networkController = networkController; }
 
-	//this will serve as the gameLoop
+	//this will start the game
 	public void run()
 	{
 		((GameView)_view).run();
 		((NetworkController)_networkController).run();
 
+		((GameModel)_model).add("pawn");
+		((GameModel)_model).add("friend");
+
 		while (true)
 		{
+			try
+			{
+				Thread.sleep(3);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Log: " + e.toString());
+			}
 
+			//((GameModel)_model).update("pawn object", "left");
+			((GameView)_view).update("refresh", ((GameModel)_model).getGameObjectLists());
 		}
 	}
-\
+
+	synchronized public void update(String message, Object object) 
+	{ 
+		//System.out.println("Log: " + message);
+
+		switch(message)
+		{
+			case "button pressed": 
+				((GameModel)_model).update("pawn object", object);
+				((NetworkController)_networkController).update("friend object", object);
+				break;
+			case "friend object":
+				((GameModel)_model).update("friend object", object);
+				break;
+		}
+	}
 }
 
 

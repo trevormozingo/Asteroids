@@ -10,5 +10,5 @@ public interface Observer
 	//when an observer object is notified the
 	//notifying object will call this objects
 	//update method
-	void update(String message, List<Object> objects);
+	void update(String message, Object object);
 }
